@@ -18,6 +18,7 @@ const RealDataDashboard = () => {
   const [filters, setFilters] = useState({
     manufacturer: 'all',
     fuelType: 'all',
+    ccCapacity: 'all',
     state: 'all',
     city: 'all',
     month: 'all',
@@ -40,6 +41,8 @@ const RealDataDashboard = () => {
       const data = dataLoader.getAggregatedData();
       setAggregatedData(data);
       setDataLoaded(true);
+      console.log('Available months after loading:', dataLoader.getAvailableMonths());
+      console.log('Total records in dataset:', dataLoader.getDataProcessor().getData().length);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
@@ -70,6 +73,7 @@ const RealDataDashboard = () => {
     const filterCriteria = {
       manufacturer: filters.manufacturer !== 'all' ? filters.manufacturer : undefined,
       fuelType: filters.fuelType !== 'all' ? filters.fuelType : undefined,
+      ccCapacity: filters.ccCapacity !== 'all' ? filters.ccCapacity : undefined,
       state: filters.state !== 'all' ? filters.state : undefined,
       city: filters.city !== 'all' ? filters.city : undefined,
       month: filters.month !== 'all' ? parseInt(filters.month) : undefined,
@@ -80,6 +84,7 @@ const RealDataDashboard = () => {
       rtoClassification: filters.rtoClassification !== 'all' ? filters.rtoClassification : undefined
     };
     
+    console.log('Filter criteria being passed:', filterCriteria);
     return dataLoader.getDataProcessor().getFilteredData(filterCriteria);
   };
 
@@ -93,6 +98,11 @@ const RealDataDashboard = () => {
     
     // Get filtered data and calculate aggregated metrics
     const filteredData = getFilteredData();
+    console.log('Filters applied:', filters);
+    console.log('Filtered data length:', filteredData.length);
+    if (filteredData.length > 0) {
+      console.log('Sample filtered record:', filteredData[0]);
+    }
     
     if (filteredData.length === 0) return null;
     
@@ -108,7 +118,7 @@ const RealDataDashboard = () => {
     const monthlyData = filteredData.reduce((acc: any, record: any) => {
       const month = record.monthOfSales;
       if (!acc[month]) {
-        acc[month] = { month, count: 0, monthName: ['Apr', 'May', 'Jun'][month-4] };
+        acc[month] = { month, count: 0, monthName: ['Apr', 'May', 'Jun', 'Jul'][month-4] };
       }
       acc[month].count += record.vehicleCount;
       return acc;
@@ -125,7 +135,13 @@ const RealDataDashboard = () => {
       acc[manufacturer].count += record.vehicleCount;
       return acc;
     }, {});
-    const manufacturers = Object.values(manufacturersData).sort((a: any, b: any) => b.count - a.count);
+    const manufacturers = Object.values(manufacturersData)
+      .map((item: any) => ({
+        ...item,
+        percentage: (item.count / totalVehicles) * 100
+      }))
+      .filter((manufacturer: any) => manufacturer.percentage >= 0.5) // Filter out manufacturers with <0.5% market share
+      .sort((a: any, b: any) => b.count - a.count);
     
     // Calculate fuel types data
     const fuelTypesData = filteredData.reduce((acc: any, record: any) => {
@@ -194,6 +210,7 @@ const RealDataDashboard = () => {
     if (!dataLoaded) return {
       manufacturers: [],
       fuelTypes: [],
+      ccCapacities: [],
       states: [],
       cities: [],
       rtos: [],
@@ -218,6 +235,7 @@ const RealDataDashboard = () => {
     return {
       manufacturers: allValues.manufacturers,
       fuelTypes: allValues.fuelTypes,
+      ccCapacities: allValues.ccCapacities,
       states: allValues.states,
       cities: allValues.cities,
       rtos: allValues.rtos,
@@ -293,7 +311,7 @@ const RealDataDashboard = () => {
           <div className="flex items-center gap-2 mt-2">
             <Badge variant="secondary" className="bg-blue-100 text-blue-800">
               <CalendarDays className="h-3 w-3 mr-1" />
-              {availableMonths.map(m => ['Apr', 'May', 'Jun'][m-4]).join(' - ')} 2025
+                              {availableMonths.map(m => ['Apr', 'May', 'Jun', 'Jul'][m-4]).join(' - ')} 2025
             </Badge>
             <Badge variant="secondary" className="bg-green-100 text-green-800">
               <Database className="h-3 w-3 mr-1" />
@@ -321,7 +339,7 @@ const RealDataDashboard = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Manufacturers</SelectItem>
-                    {uniqueValues.manufacturers.map(manufacturer => (
+                    {uniqueValues.manufacturers.filter(manufacturer => manufacturer && manufacturer.trim() !== '').map(manufacturer => (
                       <SelectItem key={manufacturer} value={manufacturer}>{manufacturer}</SelectItem>
                     ))}
                   </SelectContent>
@@ -336,8 +354,23 @@ const RealDataDashboard = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Fuel Types</SelectItem>
-                    {uniqueValues.fuelTypes.map(fuel => (
+                    {uniqueValues.fuelTypes.filter(fuel => fuel && fuel.trim() !== '').map(fuel => (
                       <SelectItem key={fuel} value={fuel}>{fuel}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">CC Capacity</label>
+                <Select value={filters.ccCapacity} onValueChange={(value) => handleFilterChange('ccCapacity', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All CC Capacities" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All CC Capacities</SelectItem>
+                    {uniqueValues.ccCapacities.filter(cc => cc && cc.trim() !== '').map(cc => (
+                      <SelectItem key={cc} value={cc}>{cc}cc</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -351,7 +384,7 @@ const RealDataDashboard = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All States</SelectItem>
-                    {uniqueValues.states.map(state => (
+                    {uniqueValues.states.filter(state => state && state.trim() !== '').map(state => (
                       <SelectItem key={state} value={state}>{state}</SelectItem>
                     ))}
                   </SelectContent>
@@ -366,7 +399,7 @@ const RealDataDashboard = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Cities</SelectItem>
-                    {uniqueValues.cities.map(city => (
+                    {uniqueValues.cities.filter(city => city && city.trim() !== '').map(city => (
                       <SelectItem key={city} value={city}>{city}</SelectItem>
                     ))}
                   </SelectContent>
@@ -383,7 +416,7 @@ const RealDataDashboard = () => {
                     <SelectItem value="all">All Months</SelectItem>
                     {availableMonths.map(month => (
                       <SelectItem key={month} value={month.toString()}>
-                        {['Apr', 'May', 'Jun'][month-4]} 2025
+                        {['Apr', 'May', 'Jun', 'Jul'][month-4]} 2025
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -416,7 +449,7 @@ const RealDataDashboard = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Models</SelectItem>
-                    {uniqueValues.models.map(model => (
+                    {uniqueValues.models.filter(model => model && model.trim() !== '').map(model => (
                       <SelectItem key={model} value={model}>{model}</SelectItem>
                     ))}
                   </SelectContent>
@@ -431,7 +464,7 @@ const RealDataDashboard = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Variants</SelectItem>
-                    {uniqueValues.variants.map(variant => (
+                    {uniqueValues.variants.filter(variant => variant && variant.trim() !== '').map(variant => (
                       <SelectItem key={variant} value={variant}>{variant}</SelectItem>
                     ))}
                   </SelectContent>
@@ -446,7 +479,7 @@ const RealDataDashboard = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All RTOs</SelectItem>
-                    {uniqueValues.rtos.map(rto => (
+                    {uniqueValues.rtos.filter(rto => rto && rto.trim() !== '').map(rto => (
                       <SelectItem key={rto} value={rto}>{rto}</SelectItem>
                     ))}
                   </SelectContent>
@@ -461,7 +494,7 @@ const RealDataDashboard = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Makes</SelectItem>
-                    {uniqueValues.manufacturers.map(make => (
+                    {uniqueValues.manufacturers.filter(make => make && make.trim() !== '').map(make => (
                       <SelectItem key={make} value={make}>{make}</SelectItem>
                     ))}
                   </SelectContent>
@@ -540,9 +573,9 @@ const RealDataDashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUpIcon className="h-5 w-5" />
-              Monthly Trends (Apr - Jun 2025)
+              Monthly Trends (Apr - Jul 2025)
             </CardTitle>
-            <CardDescription>Vehicle registration trends across three months</CardDescription>
+            <CardDescription>Vehicle registration trends across four months</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -724,7 +757,7 @@ const RealDataDashboard = () => {
                   <strong>Geographic Coverage:</strong> {displayData.totalStates} states and union territories
                 </div>
                 <div>
-                  <strong>Time Period:</strong> April to June 2025 (3 months)
+                  <strong>Time Period:</strong> April to July 2025 (4 months)
                 </div>
                 <div>
                   <strong>Data Quality:</strong> {displayData.totalCities} cities, {displayData.totalRTOs} RTOs

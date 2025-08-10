@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, Database, Home } from 'lucide-react';
+import { BarChart3, Database, Home, Target, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -22,6 +22,18 @@ const Navigation = () => {
       label: 'Real Data Dashboard',
       icon: Database,
       description: 'Live analytics from actual RTO data'
+    },
+    {
+      href: '/competitor-analysis',
+      label: 'Competitor Analysis',
+      icon: Target,
+      description: 'Strategic benchmarking and market intelligence'
+    },
+    {
+      href: '/forecasting',
+      label: 'Market Forecasting',
+      icon: TrendingUp,
+      description: 'Predictive analytics and trend projections'
     }
   ];
 
@@ -55,6 +67,16 @@ const Navigation = () => {
                       {item.href === '/real-data-dashboard' && (
                         <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800 text-xs">
                           Live Data
+                        </Badge>
+                      )}
+                      {item.href === '/competitor-analysis' && (
+                        <Badge variant="secondary" className="ml-2 bg-purple-100 text-purple-800 text-xs">
+                          New
+                        </Badge>
+                      )}
+                      {item.href === '/forecasting' && (
+                        <Badge variant="secondary" className="ml-2 bg-orange-100 text-orange-800 text-xs">
+                          New
                         </Badge>
                       )}
                     </Button>
@@ -93,6 +115,16 @@ const Navigation = () => {
                   {item.href === '/real-data-dashboard' && (
                     <Badge variant="secondary" className="ml-auto bg-green-100 text-green-800 text-xs">
                       Live
+                    </Badge>
+                  )}
+                  {item.href === '/competitor-analysis' && (
+                    <Badge variant="secondary" className="ml-auto bg-purple-100 text-purple-800 text-xs">
+                      New
+                    </Badge>
+                  )}
+                  {item.href === '/forecasting' && (
+                    <Badge variant="secondary" className="ml-auto bg-orange-100 text-orange-800 text-xs">
+                      New
                     </Badge>
                   )}
                 </div>

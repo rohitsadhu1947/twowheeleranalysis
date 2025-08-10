@@ -243,6 +243,7 @@ export class TwoWheelerDataProcessor {
           .slice(0, 5)
           .map(([state, count]) => ({ state, count }))
       }))
+      .filter(manufacturer => manufacturer.percentage >= 0.5) // Filter out manufacturers with <0.5% market share
       .sort((a, b) => b.count - a.count);
 
     // Fuel type analysis
@@ -569,6 +570,7 @@ export class TwoWheelerDataProcessor {
   getFilteredData(filters: {
     manufacturer?: string;
     fuelType?: string;
+    ccCapacity?: string;
     state?: string;
     city?: string;
     rto?: string;
@@ -581,10 +583,14 @@ export class TwoWheelerDataProcessor {
     return this.data.filter(record => {
       if (filters.manufacturer && record.vehicleMake !== filters.manufacturer) return false;
       if (filters.fuelType && record.vehicleFuel !== filters.fuelType) return false;
+      if (filters.ccCapacity && record.vehicleCC !== filters.ccCapacity) return false;
       if (filters.state && record.nameOfState !== filters.state) return false;
       if (filters.city && record.nameOfCity !== filters.city) return false;
       if (filters.rto && record.nameOfRTO !== filters.rto) return false;
-      if (filters.month && record.monthOfSales !== filters.month) return false;
+      if (filters.month && record.monthOfSales !== filters.month) {
+        console.log('Month filter mismatch:', record.monthOfSales, '!==', filters.month);
+        return false;
+      }
       if (filters.make && record.vehicleMake !== filters.make) return false;
       if (filters.model && record.vehicleModel !== filters.model) return false;
       if (filters.variant && record.vehicleVariant !== filters.variant) return false;

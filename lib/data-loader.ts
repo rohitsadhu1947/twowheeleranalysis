@@ -22,11 +22,12 @@ export class DataLoader {
     if (this.dataLoaded) return;
 
     try {
-      // Load all three months of data
+      // Load all four months of data
       const monthlyData = [
         { month: 4, csvContent: await this.fetchCSV('/data/2W_April_2025.csv') },
         { month: 5, csvContent: await this.fetchCSV('/data/2W_May_2025.csv') },
-        { month: 6, csvContent: await this.fetchCSV('/data/2W_June_2025.csv') }
+        { month: 6, csvContent: await this.fetchCSV('/data/2W_June_2025.csv') },
+        { month: 7, csvContent: await this.fetchCSV('/data/2W_July_2025.csv') }
       ];
 
       await this.dataProcessor.loadMultipleMonths(monthlyData);
@@ -82,6 +83,7 @@ export class DataLoader {
     manufacturer?: string;
     model?: string;
     fuelType?: string;
+    ccCapacity?: string;
     state?: string;
     city?: string;
     rto?: string;
@@ -90,6 +92,7 @@ export class DataLoader {
   }): {
     manufacturers: string[];
     fuelTypes: string[];
+    ccCapacities: string[];
     states: string[];
     cities: string[];
     rtos: string[];
@@ -101,6 +104,7 @@ export class DataLoader {
       return {
         manufacturers: [],
         fuelTypes: [],
+        ccCapacities: [],
         states: [],
         cities: [],
         rtos: [],
@@ -118,6 +122,7 @@ export class DataLoader {
         if (filterContext.manufacturer && record.vehicleMake !== filterContext.manufacturer) return false;
         if (filterContext.model && record.vehicleModel !== filterContext.model) return false;
         if (filterContext.fuelType && record.vehicleFuel !== filterContext.fuelType) return false;
+        if (filterContext.ccCapacity && record.vehicleCC !== filterContext.ccCapacity) return false;
         if (filterContext.state && record.nameOfState !== filterContext.state) return false;
         if (filterContext.city && record.nameOfCity !== filterContext.city) return false;
         if (filterContext.rto && record.nameOfRTO !== filterContext.rto) return false;
@@ -130,6 +135,12 @@ export class DataLoader {
     return {
       manufacturers: [...new Set(data.map(r => r.vehicleMake))].sort(),
       fuelTypes: [...new Set(data.map(r => r.vehicleFuel))].sort(),
+      ccCapacities: [...new Set(data.map(r => r.vehicleCC).filter(Boolean))].sort((a, b) => {
+        // Sort CC values numerically
+        const aNum = parseInt(a);
+        const bNum = parseInt(b);
+        return isNaN(aNum) || isNaN(bNum) ? a.localeCompare(b) : aNum - bNum;
+      }),
       states: [...new Set(data.map(r => r.nameOfState))].sort(),
       cities: [...new Set(data.map(r => r.nameOfCity))].sort(),
       rtos: [...new Set(data.map(r => r.nameOfRTO))].sort(),
