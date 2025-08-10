@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
+import Navigation from '@/components/navigation'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'Two Wheeler Analytics Dashboard',
+  description: 'Comprehensive analytics dashboard for two-wheeler vehicle registrations with real RTO data',
   generator: 'v0.dev',
 }
 
@@ -25,7 +26,10 @@ html {
 }
         `}</style>
       </head>
-      <body>{children}</body>
+      <body>
+        <Navigation />
+        {children}
+      </body>
     </html>
   )
 }
