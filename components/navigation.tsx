@@ -19,9 +19,9 @@ const Navigation = () => {
     },
     {
       href: '/real-data-dashboard',
-      label: 'Real Data Dashboard',
+      label: 'Data Dashboard',
       icon: Database,
-      description: 'Live analytics from actual RTO data'
+      description: 'Live analytics and insights'
     },
     {
       href: '/competitor-analysis',
