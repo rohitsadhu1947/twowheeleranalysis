@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, Database, Home, Target, TrendingUp } from 'lucide-react';
+import { BarChart3, Database, Home, Target, TrendingUp, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -34,6 +34,12 @@ const Navigation = () => {
       label: 'Market Forecasting',
       icon: TrendingUp,
       description: 'Predictive analytics and trend projections'
+    },
+    {
+      href: '/geographic-analysis',
+      label: 'Geographic Analysis',
+      icon: Globe,
+      description: 'Interactive mapping and regional insights'
     }
   ];
 
